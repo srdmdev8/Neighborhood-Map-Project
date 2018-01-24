@@ -70,8 +70,8 @@
           <hr>
           <input id="textbox" type="text" placeholder="Restaurant name">
           <input id="filter-btn" type="button" value="Filter">
-          <ul id="list"data-bind="foreach: title">
-            <li class="text" data-bind="text: $data"></li>
+          <ul id="list"data-bind="foreach: listItems">
+            <li class="text" data-bind="text: $data, click: $parent.clickedLocation"></li>
           </ul>
         </div>
       </div>

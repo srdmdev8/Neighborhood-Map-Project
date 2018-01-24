@@ -29,29 +29,6 @@ function populateInfoWindow(marker, infowindow) {
   }
 }
 
-var Restaurant = function(data) {
-  //Sets listItems as an observable array of my locations
-  this.title = ko.observableArray(data.title);
-};
-
-var ViewModel = function() {
-  var self = this;
-
-  this.itemList = ko.observableArray([]);
-
-  myLocations.forEach(function(location) {
-    self.itemList.push(new Restaurant(location));
-  });
-
-  /*self.clickedLocation = function(location) {
-    if (location) {
-      populateInfoWindow(title, formatted_address);
-    }
-  };*/
-
-}
-ko.applyBindings(new ViewModel());
-
 function initMap() {
   var myInfoWindow = new google.maps.InfoWindow();
   var bounds = new google.maps.LatLngBounds();
@@ -59,7 +36,8 @@ function initMap() {
   //Constructor creates a new map - only center and zoom are required.
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 39.7438895, lng: -105.0201094},
-    zoom: 13
+    zoom: 13,
+    mapTypeControl: false
   });
 
   //The following group uses the location array to create an array of markers on initialize.
@@ -86,8 +64,44 @@ function initMap() {
     marker.addListener('click', function() {
       populateInfoWindow(this, myInfoWindow);
     });
+
+    var ViewModel = function() {
+      var self = this;
+
+      this.listItems = ko.observableArray();
+      for (var i = 0; i < myLocations.length; i++) {
+        self.listItems.push(myLocations[i].title);
+      }
+
+      self.clickedLocation = function(item) {
+        var marker;
+
+        if (item === myLocations[0].title) {
+          populateInfoWindow(markers[0], myInfoWindow);
+        } else if (item === myLocations[1].title) {
+          populateInfoWindow(markers[1], myInfoWindow);
+        } else if (item === myLocations[2].title) {
+          populateInfoWindow(markers[2], myInfoWindow);
+        } else if (item === myLocations[3].title) {
+          populateInfoWindow(markers[3], myInfoWindow);
+        } else if (item === myLocations[4].title) {
+          populateInfoWindow(markers[4], myInfoWindow);
+        } else if (item === myLocations[5].title) {
+          populateInfoWindow(markers[5], myInfoWindow);
+        } else if (item === myLocations[6].title) {
+          populateInfoWindow(markers[6], myInfoWindow);
+        } else if (item === myLocations[7].title) {
+          populateInfoWindow(markers[7], myInfoWindow);
+        } else if (item === myLocations[8].title) {
+          populateInfoWindow(markers[8], myInfoWindow);
+        } else {
+          populateInfoWindow(markers[9], myInfoWindow);
+        }
+      };
+    };
   }
   map.fitBounds(bounds);
+  ko.applyBindings(new ViewModel());
 }
 
 /*const request = require('request');
