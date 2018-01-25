@@ -99,7 +99,7 @@ function initMap() {
     //Push the marker to our array of markers.
     markers.push(marker);
     //Extend the boundaries of the map for each marker.
-    bounds.extend(marker.position);
+    bounds.extend(marker.position, myInfoWindow);
     //Create an onclick event to open an infoWindow at each marker.
     marker.addListener('click', function() {
       populateInfoWindow(this, myInfoWindow);
@@ -113,40 +113,51 @@ function initMap() {
       this.setIcon(defaultIcon);
     });
   }
+
+  //This is my KnockoutJS ViewModel.
   var ViewModel = function() {
     var self = this;
 
+    //Create array of restaurant names.
     this.listItems = ko.observableArray();
     for (var i = 0; i < myLocations.length; i++) {
       self.listItems.push(myLocations[i].title);
     }
 
+    //This function displays the infowindow of the applicable list item when clicked.
     self.clickedLocation = function(item) {
-
-      if (item === myLocations[0].title) {
-        populateInfoWindow(markers[0], myInfoWindow);
-      } else if (item === myLocations[1].title) {
-        populateInfoWindow(markers[1], myInfoWindow);
-      } else if (item === myLocations[2].title) {
-        populateInfoWindow(markers[2], myInfoWindow);
-      } else if (item === myLocations[3].title) {
-        populateInfoWindow(markers[3], myInfoWindow);
-      } else if (item === myLocations[4].title) {
-        populateInfoWindow(markers[4], myInfoWindow);
-      } else if (item === myLocations[5].title) {
-        populateInfoWindow(markers[5], myInfoWindow);
-      } else if (item === myLocations[6].title) {
-        populateInfoWindow(markers[6], myInfoWindow);
-      } else if (item === myLocations[7].title) {
-        populateInfoWindow(markers[7], myInfoWindow);
-      } else if (item === myLocations[8].title) {
-        populateInfoWindow(markers[8], myInfoWindow);
-      } else {
-        populateInfoWindow(markers[9], myInfoWindow);
+      for(var i = 0; i < myLocations.length; i++) {
+        if(item === myLocations[i].title) {
+          populateInfoWindow(markers[i], myInfoWindow);
+        }
       }
     };
-  };
+
+    //This function filters my list items.
+    self.filterList = ko.computed(function(item) {
+      var listItems = self.listItems;
+          if (!item) {
+            return listItems;
+          } else {
+            return ko.utils.arrayFilter(listItems, function() {
+              return (listItems === item);
+          });
+        }
+      console.log(item);
+      /*for(var i = 0; i < listItems.length; i++) {
+        if (!item) {
+          return listItems;
+          } else {
+            return ko.utils.arrayFilter(listItems, function(item) {
+              return (listItems === item);
+          });
+        }
+      }*/
+    });
+  }
   map.fitBounds(bounds);
+
+  //Apply data bindings to the view using KnockoutJS.
   ko.applyBindings(new ViewModel());
 }
 
