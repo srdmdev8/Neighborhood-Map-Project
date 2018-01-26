@@ -1,15 +1,15 @@
 //These are the restaurants that will be shown to the user.
 var myLocations = [
-  {title: "Snooze", category: "", formatted_address: "2262 Larimer St, Denver, CO 80205, USA", location: {lat: 39.7554577, lng: -104.98885740000003}},
-  {title: "Denver Biscuit Company", category: "", formatted_address: "3237 E Colfax Ave, Denver, CO 80206, USA", location: {lat: 39.7403739, lng: -104.94909180000002}},
-  {title: "Fogo de Chão", category: "", formatted_address: "1513 Wynkoop St, Denver, CO 80202, USA", location: {lat: 39.7514247, lng: -105.0022543}},
-  {title: "Maggiano's Little Italy", category: "", formatted_address: "500 16th St #150, Denver, CO 80202, USA", location: {lat: 39.7435013, lng: -104.9908943}},
-  {title: "The Old Spaghetti Factory", category: "", formatted_address: "1215 18th St, Denver, CO 80202, USA", location: {lat: 39.7508253, lng: -104.9941081}},
-  {title: "Linger", category: "", formatted_address: "2030 W 30th Ave, Denver, CO 80211, USA", location: {lat: 39.7594564, lng: -105.0113582}},
-  {title: "True Food Kitchen", category: "", formatted_address: "2800 E 2nd Ave #101, Denver, CO 80206, USA", location: {lat: 39.7192194, lng: -104.9543924}},
-  {title: "Ted's Montana Grill", category: "", formatted_address: "1401 Larimer St, Denver, CO 80202, USA", location: {lat: 39.7475564, lng: -104.9998662}},
-  {title: "Ophelia's Electric Soapbox", category: "", formatted_address: "1215 20th St, Denver, CO 80202, USA", location: {lat: 39.7526845, lng: -104.9918492}},
-  {title: "Lucile's Creole Cafe", category: "", formatted_address: "275 S Logan St, Denver, CO 80209, USA", location: {lat: 39.7115175, lng: -104.9831164}}
+  {title: "Snooze", category: "", formatted_address: "2262 Larimer St, Denver, CO 80205, USA", location: {lat: 39.7554577, lng: -104.98885740000003}, visibility: ko.observable(true)},
+  {title: "Denver Biscuit Company", category: "", formatted_address: "3237 E Colfax Ave, Denver, CO 80206, USA", location: {lat: 39.7403739, lng: -104.94909180000002}, visibility: ko.observable(true)},
+  {title: "Fogo de Chão", category: "", formatted_address: "1513 Wynkoop St, Denver, CO 80202, USA", location: {lat: 39.7514247, lng: -105.0022543}, visibility: ko.observable(true)},
+  {title: "Maggiano's Little Italy", category: "", formatted_address: "500 16th St #150, Denver, CO 80202, USA", location: {lat: 39.7435013, lng: -104.9908943}, visibility: ko.observable(true)},
+  {title: "The Old Spaghetti Factory", category: "", formatted_address: "1215 18th St, Denver, CO 80202, USA", location: {lat: 39.7508253, lng: -104.9941081}, visibility: ko.observable(true)},
+  {title: "Linger", category: "", formatted_address: "2030 W 30th Ave, Denver, CO 80211, USA", location: {lat: 39.7594564, lng: -105.0113582}, visibility: ko.observable(true)},
+  {title: "True Food Kitchen", category: "", formatted_address: "2800 E 2nd Ave #101, Denver, CO 80206, USA", location: {lat: 39.7192194, lng: -104.9543924}, visibility: ko.observable(true)},
+  {title: "Ted's Montana Grill", category: "", formatted_address: "1401 Larimer St, Denver, CO 80202, USA", location: {lat: 39.7475564, lng: -104.9998662}, visibility: ko.observable(true)},
+  {title: "Ophelia's Electric Soapbox", category: "", formatted_address: "1215 20th St, Denver, CO 80202, USA", location: {lat: 39.7526845, lng: -104.9918492}, visibility: ko.observable(true)},
+  {title: "Lucile's Creole Cafe", category: "", formatted_address: "275 S Logan St, Denver, CO 80209, USA", location: {lat: 39.7115175, lng: -104.9831164}, visibility: ko.observable(true)}
 ];
 
 //Global variables
@@ -87,17 +87,21 @@ function initMap() {
     var position = myLocations[i].location;
     var title = myLocations[i].title;
     var address = myLocations[i].formatted_address;
+    var visible = myLocations[i].visibility;
 
     //Create a marker per location, and put into markers array.
-    var marker = new google.maps.Marker({
-      map: map,
-      position: position,
-      title: title,
-      address: address,
-      animation: google.maps.Animation.DROP,
-      icon: defaultIcon,
-      id: i
-    });
+    if (visible(true)) {
+      var marker = new google.maps.Marker({
+        map: map,
+        position: position,
+        title: title,
+        address: address,
+        visible: true,
+        animation: google.maps.Animation.DROP,
+        icon: defaultIcon,
+        id: i
+      });
+    }
     //Push the marker to our array of markers.
     markers.push(marker);
     //Extend the boundaries of the map for each marker and InfoWindow.
@@ -124,7 +128,10 @@ function initMap() {
     //Create array of restaurant names.
     this.listItems = ko.observableArray();
     for (var i = 0; i < myLocations.length; i++) {
-      self.listItems.push(myLocations[i].title);
+      var visible = myLocations[i].visibility;
+      if (visible(true)) {
+        self.listItems.push(myLocations[i].title);
+      }
     }
 
     //This function displays the infowindow of the applicable list item when clicked.
@@ -137,18 +144,19 @@ function initMap() {
     };
 
     //Create array of categories for list box.
-    this.categories = ko.observableArray(["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"]);
+    this.categories = ["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"];
 
     //This function filters my list items.
-    self.chosenValue = ko.computed(function(item) {
+    this.chosenValue = function(item) {
       for(var i = 0; i < myLocations.length; i++) {
-        if(item === myLocations[i].category) {
-          myLocations[i].title = ko.observable(true);
-        } else {
-          myLocations[i].title = ko.observable(false);
+        var location = myLocations[i];
+        myLocations[i].visibility(true);
+        var title = location.title;
+        if(item !== myLocations[i].category) {
+          myLocations[i].visibility(false);
         }
       }
-    });
+    }
   }
   map.fitBounds(bounds);
 

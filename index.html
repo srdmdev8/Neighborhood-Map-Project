@@ -69,8 +69,8 @@
         <h1>Find The Delicious Tastes Of Denver</h1>
         <div>
           <hr>
-          <select id="dropdown" data-bind="options: categories, optionsCaption: 'Select Category...'"></select>
-          <ul id="list"data-bind="foreach: listItems, visible: chosenValue">
+          <select id="dropdown" data-bind="options: categories, optionsCaption: 'Select Category...', event:{change: chosenValue}"></select>
+          <ul id="list" data-bind="foreach: listItems, visible: visibility">
             <li id="text" data-bind="text: $data, click: $parent.clickedLocation"></li>
           </ul>
         </div>
