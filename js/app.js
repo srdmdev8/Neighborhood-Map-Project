@@ -90,22 +90,23 @@ function initMap() {
     var visible = myLocations[i].visibility;
 
     //Create a marker per location, and put into markers array.
-    if (visible(true)) {
-      var marker = new google.maps.Marker({
-        map: map,
-        position: position,
-        title: title,
-        address: address,
-        visible: true,
-        animation: google.maps.Animation.DROP,
-        icon: defaultIcon,
-        id: i
-      });
-    }
+    var marker = new google.maps.Marker({
+      map: map,
+      position: position,
+      title: title,
+      address: address,
+      animation: google.maps.Animation.DROP,
+      icon: defaultIcon,
+      id: i
+    });
+
     //Push the marker to our array of markers.
-    markers.push(marker);
+    markers.push("Marker: " + marker);
+
     //Extend the boundaries of the map for each marker and InfoWindow.
     bounds.extend(marker.position, myInfoWindow);
+
+    markers[i]["infowindow"] = myInfoWindow;
     //Create an onclick event to open an infoWindow at each marker.
     marker.addListener('click', function() {
       populateInfoWindow(this, myInfoWindow);
@@ -118,52 +119,42 @@ function initMap() {
     marker.addListener('mouseout', function() {
       this.setIcon(defaultIcon);
     });
-    getData(title);
-  }
-
-  //This is my KnockoutJS ViewModel.
-  var ViewModel = function() {
-    var self = this;
-
-    //Create array of restaurant names.
-    this.listItems = ko.observableArray();
-    for (var i = 0; i < myLocations.length; i++) {
-      var visible = myLocations[i].visibility;
-      if (visible(true)) {
-        self.listItems.push(myLocations[i].title);
-      }
-    }
-
-    //This function displays the infowindow of the applicable list item when clicked.
-    self.clickedLocation = function(item) {
-      for(var i = 0; i < myLocations.length; i++) {
-        if(item === myLocations[i].title) {
-          populateInfoWindow(markers[i], myInfoWindow);
-        }
-      }
-    };
-
-    //Create array of categories for list box.
-    this.categories = ["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"];
-
-    //This function filters my list items.
-    this.chosenValue = function(item) {
-      for(var i = 0; i < myLocations.length; i++) {
-        var location = myLocations[i];
-        myLocations[i].visibility(true);
-        var title = location.title;
-        if(item !== myLocations[i].category) {
-          myLocations[i].visibility(false);
-        }
-      }
-    }
+    //getData(title);
   }
   map.fitBounds(bounds);
-
-
-  //Apply data bindings to the view using KnockoutJS.
-  ko.applyBindings(new ViewModel());
 }
+
+//This is my KnockoutJS ViewModel.
+var ViewModel = function() {
+  var self = this;
+
+  //Create array of restaurant names.
+  this.listItems = ko.observableArray(myLocations);
+
+  //This function displays the infowindow of the applicable list item when clicked.
+  self.clickedLocation = function(item) {
+    for(var i = 0; i < myLocations.length; i++) {
+      if(item.title == myLocations[i].title) {
+        populateInfoWindow(markers[i], myInfoWindow);
+      }
+    }
+  };
+
+  //Create array of categories for list box.
+  this.categories = ["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"];
+
+  //This function filters my list items.
+  this.chosenValue = function(item) {
+
+  }
+
+  //This function clears the filter
+  this.clearFilter = function(clear) {
+
+  }
+}
+//Apply data bindings to the view using KnockoutJS.
+ko.applyBindings(new ViewModel());
 
 // This function takes in a COLOR, and then creates a new marker
 // icon of that color. The icon will be 21 px wide by 34 high, have an origin
@@ -180,7 +171,7 @@ function makeMarkerIcon(markerColor) {
 }
 
 //This function retreives the data from Foursquare about each restaurant in order to filter them by category.
-function getData(title) {
+/*function getData(title) {
   $.ajax({
     url: 'https://api.foursquare.com/v2/venues/search?query='+title+'&near=denver,co&client_id=DT0XBOVKI2P2PN3Q53HO3GZAHC12TKF4NZ42YZFD4N1S4TSC&client_secret=PQ5S5TGRFZQUAEC5XM3KTGQEEWNP5IB1Y0SY2O1YGFGARZPV&v=20180125',
     dataType: "json",
@@ -191,9 +182,6 @@ function getData(title) {
         venue = venue[0];
         var name = venue.name;
         var locationCategory = venue.categories[0].shortName;
-        /*if (filterOptions.indexOf(locationCategory) == -1) {
-          filterOptions.push(locationCategory);
-        }*/
         for(var i = 0; i < myLocations.length; i++) {
           if (name === myLocations[i].title) {
             myLocations[i]["category"] = locationCategory;
@@ -202,4 +190,4 @@ function getData(title) {
       }
     }
   });
-}
+}*/

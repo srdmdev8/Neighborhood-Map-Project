@@ -42,7 +42,11 @@
     }
 
     #dropdown {
-      width: 100%;
+      width: 72%;
+    }
+
+    #clear-filter-btn {
+      width: 25%;
     }
 
     #list {
@@ -70,8 +74,9 @@
         <div>
           <hr>
           <select id="dropdown" data-bind="options: categories, optionsCaption: 'Select Category...', event:{change: chosenValue}"></select>
-          <ul id="list" data-bind="foreach: listItems, visible: visibility">
-            <li id="text" data-bind="text: $data, click: $parent.clickedLocation"></li>
+          <input id=clear-"filter-btn" type="button" value="Clear Filter" data-bind="click: clearFilter">
+          <ul id="list" data-bind="foreach: listItems">
+            <li id="text" data-bind="text: $data.title, click: $parent.clickedLocation"></li>
           </ul>
         </div>
       </div>
