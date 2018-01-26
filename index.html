@@ -41,12 +41,8 @@
       color: #fff;
     }
 
-    #textbox {
-      width: 72%;
-    }
-
-    #filter-btn {
-      width: 25%;
+    #dropdown {
+      width: 100%;
     }
 
     #list {
@@ -73,9 +69,8 @@
         <h1>Find The Delicious Tastes Of Denver</h1>
         <div>
           <hr>
-          <input id="textbox" type="text" placeholder="Restaurant name">
-          <input id="filter-btn" type="button" value="Filter" data-bind="click: filterList">
-          <ul id="list"data-bind="foreach: listItems">
+          <select id="dropdown" data-bind="options: categories, optionsCaption: 'Select Category...'"></select>
+          <ul id="list"data-bind="foreach: listItems, visible: chosenValue">
             <li id="text" data-bind="text: $data, click: $parent.clickedLocation"></li>
           </ul>
         </div>
@@ -84,8 +79,9 @@
     <div id="map"></div>
 
     <script async defer
-      src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDgMUzTriIQYBLL_xkB1WXVSHH_Jkt82XA&v=3&callback=initMap">
+      src="https://maps.googleapis.com/maps/api/js?&key=AIzaSyDgMUzTriIQYBLL_xkB1WXVSHH_Jkt82XA&v=3&callback=initMap" onerror="loadError()">
     </script>
+    <script src="js/lib/jQuery.js"></script>
     <script src="js/lib/knockout-3.4.2.js"></script>
     <script src="js/app.js"></script>
   </body>

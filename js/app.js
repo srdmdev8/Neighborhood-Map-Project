@@ -1,15 +1,15 @@
 //These are the restaurants that will be shown to the user.
 var myLocations = [
-  {title: "Snooze an AM Eatery", formatted_address: "2262 Larimer St, Denver, CO 80205, USA", location: {lat: 39.7554577, lng: -104.9888574}},
-  {title: "Denver Biscuit Company/Fat Sully's Pizza", formatted_address: "3237 E Colfax Ave, Denver, CO 80206, USA", location: {lat: 39.7403739, lng: -104.9490918}},
-  {title: "Fogo de Chao Brazilian Steakhouse", formatted_address: "1513 Wynkoop St, Denver, CO 80202, USA", location: {lat: 39.7514247, lng: -105.0022543}},
-  {title: "Maggiano's Little Italy", formatted_address: "500 16th St #150, Denver, CO 80202, USA", location: {lat: 39.7435013, lng: -104.9908943}},
-  {title: "The Old Spaghetti Factory", formatted_address: "1215 18th St, Denver, CO 80202, USA", location: {lat: 39.7508253, lng: -104.9941081}},
-  {title: "Linger", formatted_address: "2030 W 30th Ave, Denver, CO 80211, USA", location: {lat: 39.7594564, lng: -105.0113582}},
-  {title: "True Food Kitchen", formatted_address: "2800 E 2nd Ave #101, Denver, CO 80206, USA", location: {lat: 39.7192194, lng: -104.9543924}},
-  {title: "Ted's Montana Grill", formatted_address: "1401 Larimer St, Denver, CO 80202, USA", location: {lat: 39.7475564, lng: -104.9998662}},
-  {title: "Ophelia's Electric Soapbox", formatted_address: "1215 20th St, Denver, CO 80202, USA", location: {lat: 39.7526845, lng: -104.9918492}},
-  {title: "Lucile's Creole Cafe", formatted_address: "275 S Logan St, Denver, CO 80209, USA", location: {lat: 39.7115175, lng: -104.9831164}}
+  {title: "Snooze", category: "", formatted_address: "2262 Larimer St, Denver, CO 80205, USA", location: {lat: 39.7554577, lng: -104.98885740000003}},
+  {title: "Denver Biscuit Company", category: "", formatted_address: "3237 E Colfax Ave, Denver, CO 80206, USA", location: {lat: 39.7403739, lng: -104.94909180000002}},
+  {title: "Fogo de Chão", category: "", formatted_address: "1513 Wynkoop St, Denver, CO 80202, USA", location: {lat: 39.7514247, lng: -105.0022543}},
+  {title: "Maggiano's Little Italy", category: "", formatted_address: "500 16th St #150, Denver, CO 80202, USA", location: {lat: 39.7435013, lng: -104.9908943}},
+  {title: "The Old Spaghetti Factory", category: "", formatted_address: "1215 18th St, Denver, CO 80202, USA", location: {lat: 39.7508253, lng: -104.9941081}},
+  {title: "Linger", category: "", formatted_address: "2030 W 30th Ave, Denver, CO 80211, USA", location: {lat: 39.7594564, lng: -105.0113582}},
+  {title: "True Food Kitchen", category: "", formatted_address: "2800 E 2nd Ave #101, Denver, CO 80206, USA", location: {lat: 39.7192194, lng: -104.9543924}},
+  {title: "Ted's Montana Grill", category: "", formatted_address: "1401 Larimer St, Denver, CO 80202, USA", location: {lat: 39.7475564, lng: -104.9998662}},
+  {title: "Ophelia's Electric Soapbox", category: "", formatted_address: "1215 20th St, Denver, CO 80202, USA", location: {lat: 39.7526845, lng: -104.9918492}},
+  {title: "Lucile's Creole Cafe", category: "", formatted_address: "275 S Logan St, Denver, CO 80209, USA", location: {lat: 39.7115175, lng: -104.9831164}}
 ];
 
 //Global variables
@@ -59,9 +59,11 @@ function populateInfoWindow(marker, infowindow) {
     // Open the infowindow on the correct marker.
     infowindow.open(map, marker);
   }
+  //The bounceTimer is to stop the markers bouncing animation after 1500ms.
   bounceTimer = setTimeout(function(){ marker.setAnimation(null); }, 1500);
 }
 
+//This function initiates the map.
 function initMap() {
   var myInfoWindow = new google.maps.InfoWindow();
   var bounds = new google.maps.LatLngBounds();
@@ -98,7 +100,7 @@ function initMap() {
     });
     //Push the marker to our array of markers.
     markers.push(marker);
-    //Extend the boundaries of the map for each marker.
+    //Extend the boundaries of the map for each marker and InfoWindow.
     bounds.extend(marker.position, myInfoWindow);
     //Create an onclick event to open an infoWindow at each marker.
     marker.addListener('click', function() {
@@ -112,6 +114,7 @@ function initMap() {
     marker.addListener('mouseout', function() {
       this.setIcon(defaultIcon);
     });
+    getData(title);
   }
 
   //This is my KnockoutJS ViewModel.
@@ -133,29 +136,22 @@ function initMap() {
       }
     };
 
+    //Create array of categories for list box.
+    this.categories = ko.observableArray(["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"]);
+
     //This function filters my list items.
-    self.filterList = ko.computed(function(item) {
-      var listItems = self.listItems;
-          if (!item) {
-            return listItems;
-          } else {
-            return ko.utils.arrayFilter(listItems, function() {
-              return (listItems === item);
-          });
+    self.chosenValue = ko.computed(function(item) {
+      for(var i = 0; i < myLocations.length; i++) {
+        if(item === myLocations[i].category) {
+          myLocations[i].title = ko.observable(true);
+        } else {
+          myLocations[i].title = ko.observable(false);
         }
-      console.log(item);
-      /*for(var i = 0; i < listItems.length; i++) {
-        if (!item) {
-          return listItems;
-          } else {
-            return ko.utils.arrayFilter(listItems, function(item) {
-              return (listItems === item);
-          });
-        }
-      }*/
+      }
     });
   }
   map.fitBounds(bounds);
+
 
   //Apply data bindings to the view using KnockoutJS.
   ko.applyBindings(new ViewModel());
@@ -175,23 +171,27 @@ function makeMarkerIcon(markerColor) {
   return markerImage;
 }
 
-/*const request = require('request');
-
-request({
-  url: 'https://api.foursquare.com/v2/venues/explore',
-  method: 'GET',
-  qs: {
-    client_id: 'DT0XBOVKI2P2PN3Q53HO3GZAHC12TKF4NZ42YZFD4N1S4TSC',
-    client_secret: 'PQ5S5TGRFZQUAEC5XM3KTGQEEWNP5IB1Y0SY2O1YGFGARZPV',
-    ll: '40.7243,-74.0018',
-    query: 'coffee',
-    v: '20170801',
-    limit: 1
-  }
-}, function(err, res, body) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(body);
-  }
-});*/
+//This function retreives the data from Foursquare about each restaurant in order to filter them by category.
+function getData(title) {
+  $.ajax({
+    url: 'https://api.foursquare.com/v2/venues/search?query='+title+'&near=denver,co&client_id=DT0XBOVKI2P2PN3Q53HO3GZAHC12TKF4NZ42YZFD4N1S4TSC&client_secret=PQ5S5TGRFZQUAEC5XM3KTGQEEWNP5IB1Y0SY2O1YGFGARZPV&v=20180125',
+    dataType: "json",
+    success: function(response) {
+      var locationData;
+      if(response.meta.code == 200) {
+        var venue = response.response.venues;
+        venue = venue[0];
+        var name = venue.name;
+        var locationCategory = venue.categories[0].shortName;
+        /*if (filterOptions.indexOf(locationCategory) == -1) {
+          filterOptions.push(locationCategory);
+        }*/
+        for(var i = 0; i < myLocations.length; i++) {
+          if (name === myLocations[i].title) {
+            myLocations[i]["category"] = locationCategory;
+          }
+        }
+      }
+    }
+  });
+}
