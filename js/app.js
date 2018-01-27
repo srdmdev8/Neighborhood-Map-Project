@@ -17,10 +17,38 @@ var map;
 var markers = [];
 var bounceTimer;
 var myInfoWindow;
+var defaultIcon;
+var highlightedIcon;
 
 function populateInfoWindow() {
   var marker = this;
   var infowindow = myInfoWindow;
+  var streetViewService = new google.maps.StreetViewService();
+  var radius = 50;
+  // In case the status is OK, which means the pano was found, compute the
+  // position of the streetview image, then calculate the heading, then get a
+  // panorama from that and set the options
+  function getStreetView(data, status) {
+    if (status == google.maps.StreetViewStatus.OK) {
+      var nearStreetViewLocation = data.location.latLng;
+      var heading = google.maps.geometry.spherical.computeHeading(
+        nearStreetViewLocation, marker.position);
+        infowindow.setContent('<div>' + marker.title + '</div><div>' + marker.address + '</div><div id="pano"></div>');
+        var panoramaOptions = {
+          position: nearStreetViewLocation,
+          pov: {
+            heading: heading,
+            pitch: 30
+          }
+        };
+      var panorama = new google.maps.StreetViewPanorama(
+        document.getElementById('pano'), panoramaOptions);
+    } else {
+      infowindow.setContent('<div>' + marker.title + '</div><div>' + marker.address + '</div>' +
+        '<div>No Street View Found</div>');
+    }
+  }
+
   // Check to make sure the infowindow is not already opened on this marker.
   if (infowindow.marker != marker) {
     // Clear the infowindow content to give the streetview time to load.
@@ -31,31 +59,8 @@ function populateInfoWindow() {
       infowindow.marker = null;
     });
     marker.setAnimation(google.maps.Animation.BOUNCE);
-    var streetViewService = new google.maps.StreetViewService();
-    var radius = 50;
-    // In case the status is OK, which means the pano was found, compute the
-    // position of the streetview image, then calculate the heading, then get a
-    // panorama from that and set the options
-    function getStreetView(data, status) {
-      if (status == google.maps.StreetViewStatus.OK) {
-        var nearStreetViewLocation = data.location.latLng;
-        var heading = google.maps.geometry.spherical.computeHeading(
-          nearStreetViewLocation, marker.position);
-          infowindow.setContent('<div>' + marker.title + '</div><div>' + marker.address + '</div><div id="pano"></div>');
-          var panoramaOptions = {
-            position: nearStreetViewLocation,
-            pov: {
-              heading: heading,
-              pitch: 30
-            }
-          };
-        var panorama = new google.maps.StreetViewPanorama(
-          document.getElementById('pano'), panoramaOptions);
-      } else {
-        infowindow.setContent('<div>' + marker.title + '</div><div>' + marker.address + '</div>' +
-          '<div>No Street View Found</div>');
-      }
-    }
+
+
     // Use streetview service to get the closest streetview image within
     // 50 meters of the markers position
     streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
@@ -70,6 +75,7 @@ function populateInfoWindow() {
 function initMap() {
   myInfoWindow = new google.maps.InfoWindow();
   var bounds = new google.maps.LatLngBounds();
+  var marker;
 
   //Constructor creates a new map - only center and zoom are required.
   map = new google.maps.Map(document.getElementById('map'), {
@@ -79,10 +85,10 @@ function initMap() {
   });
 
   // Style the markers a bit. This will be our listing marker icon.
-  var defaultIcon = makeMarkerIcon('0091ff');
+  defaultIcon = makeMarkerIcon('0091ff');
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
-  var highlightedIcon = makeMarkerIcon('FFFF24');
+  highlightedIcon = makeMarkerIcon('FFFF24');
 
   //The following group uses the location array to create an array of markers on initialize.
   for (var i = 0; i < myLocations.length; i++) {
@@ -90,10 +96,9 @@ function initMap() {
     var position = myLocations[i].location;
     var title = myLocations[i].title;
     var address = myLocations[i].formatted_address;
-    var visible = myLocations[i].visibility;
 
     //Create a marker per location, and put into markers array.
-    var marker = new google.maps.Marker({
+    marker = new google.maps.Marker({
       map: map,
       position: position,
       title: title,
@@ -111,19 +116,22 @@ function initMap() {
 
     myLocations[i].marker = marker;
     //Create an onclick event to open an infoWindow at each marker.
-    marker.addListener('click', populateInfoWindow)
-
+    marker.addListener('click', populateInfoWindow);
     // Two event listeners - one for mouseover, one for mouseout,
     // to change the colors back and forth.
-    marker.addListener('mouseover', function() {
-      this.setIcon(highlightedIcon);
-    });
-    marker.addListener('mouseout', function() {
-      this.setIcon(defaultIcon);
-    });
+    marker.addListener('mouseover', myMouseOver);
+    marker.addListener('mouseout', myMouseOut);
     getData(title);
   }
   map.fitBounds(bounds);
+}
+
+function myMouseOver() {
+  this.setIcon(highlightedIcon);
+}
+
+function myMouseOut() {
+  this.setIcon(defaultIcon);
 }
 
 //This is my KnockoutJS ViewModel.
@@ -136,7 +144,7 @@ var ViewModel = function() {
   //This function displays the infowindow of the applicable list item when clicked.
   self.clickedLocation = function(item) {
     google.maps.event.trigger(item.marker,'click');
-  }
+  };
 
   //Create array of categories for list box.
   this.categories = ko.observableArray(["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"]);
@@ -146,13 +154,12 @@ var ViewModel = function() {
   this.chosenValue.subscribe(function(newValue) {
     for (var i = 0; i < myLocations.length; i++) {
       if (newValue == myLocations[i].category) {
-        console.log(newValue);
         myLocations[i].visibility(true);
         myLocations[i].marker.setVisible(true);
       } else {
-        console.log("else");
         myLocations[i].visibility(false);
         myLocations[i].marker.setVisible(false);
+        myInfoWindow.close();
       }
     }
   });
@@ -163,8 +170,8 @@ var ViewModel = function() {
       myLocations[i].visibility(true);
       myLocations[i].marker.setVisible(true);
     }
-  }
-}
+  };
+};
 //Apply data bindings to the view using KnockoutJS.
 ko.applyBindings(new ViewModel());
 
@@ -195,13 +202,13 @@ function getData(title) {
         var locationCategory = venue.categories[0].shortName;
         for(var i = 0; i < myLocations.length; i++) {
           if (name === myLocations[i].title) {
-            myLocations[i]["category"] = locationCategory;
+            myLocations[i].category = locationCategory;
           }
         }
       }
     },
     error: function() {
-      console.log("ERROR LOADING DATA")
+      alert("ERROR: Foursquare API failed to load!");
     }
   });
 }
