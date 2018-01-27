@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>My Neighborhood Map</title>
 
     <style>
@@ -62,9 +63,9 @@
     }
 
     #pano {
-        width: 200px;
-        height: 200px;
-      }
+      width: 200px;
+      height: 200px;
+    }
     </style>
   </head>
   <body>
@@ -73,10 +74,10 @@
         <h1>Find The Delicious Tastes Of Denver</h1>
         <div>
           <hr>
-          <select id="dropdown" data-bind="options: categories, optionsCaption: 'Select Category...', event:{change: chosenValue}"></select>
+          <select id="dropdown" data-bind="options: categories, optionsCaption: 'Select Category...', value: chosenValue"></select>
           <input id=clear-"filter-btn" type="button" value="Clear Filter" data-bind="click: clearFilter">
           <ul id="list" data-bind="foreach: listItems">
-            <li id="text" data-bind="text: $data.title, click: $parent.clickedLocation"></li>
+            <li id="text" data-bind="text: $data.title, click: $parent.clickedLocation, visible: visibility"></li>
           </ul>
         </div>
       </div>

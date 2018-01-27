@@ -16,8 +16,11 @@ var myLocations = [
 var map;
 var markers = [];
 var bounceTimer;
+var myInfoWindow;
 
-function populateInfoWindow(marker, infowindow) {
+function populateInfoWindow() {
+  var marker = this;
+  var infowindow = myInfoWindow;
   // Check to make sure the infowindow is not already opened on this marker.
   if (infowindow.marker != marker) {
     // Clear the infowindow content to give the streetview time to load.
@@ -65,7 +68,7 @@ function populateInfoWindow(marker, infowindow) {
 
 //This function initiates the map.
 function initMap() {
-  var myInfoWindow = new google.maps.InfoWindow();
+  myInfoWindow = new google.maps.InfoWindow();
   var bounds = new google.maps.LatLngBounds();
 
   //Constructor creates a new map - only center and zoom are required.
@@ -101,16 +104,15 @@ function initMap() {
     });
 
     //Push the marker to our array of markers.
-    markers.push("Marker: " + marker);
+    markers.push(marker);
 
     //Extend the boundaries of the map for each marker and InfoWindow.
     bounds.extend(marker.position, myInfoWindow);
 
-    markers[i]["infowindow"] = myInfoWindow;
+    myLocations[i].marker = marker;
     //Create an onclick event to open an infoWindow at each marker.
-    marker.addListener('click', function() {
-      populateInfoWindow(this, myInfoWindow);
-    });
+    marker.addListener('click', populateInfoWindow)
+
     // Two event listeners - one for mouseover, one for mouseout,
     // to change the colors back and forth.
     marker.addListener('mouseover', function() {
@@ -119,7 +121,7 @@ function initMap() {
     marker.addListener('mouseout', function() {
       this.setIcon(defaultIcon);
     });
-    //getData(title);
+    getData(title);
   }
   map.fitBounds(bounds);
 }
@@ -133,20 +135,25 @@ var ViewModel = function() {
 
   //This function displays the infowindow of the applicable list item when clicked.
   self.clickedLocation = function(item) {
-    for(var i = 0; i < myLocations.length; i++) {
-      if(item.title == myLocations[i].title) {
-        populateInfoWindow(markers[i], myInfoWindow);
-      }
-    }
-  };
+    google.maps.event.trigger(item.marker,'click');
+  }
 
   //Create array of categories for list box.
-  this.categories = ["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"];
+  this.categories = ko.observableArray(["New American", "Breakfast", "Italian", "Churrascaria", "American", "Lounge", "Cajun / Creole"]);
 
   //This function filters my list items.
-  this.chosenValue = function(item) {
-
-  }
+  this.chosenValue = ko.observable();
+  this.chosenValue.subscribe(function(newValue) {
+    for (var i = 0; i < myLocations.length; i++) {
+      if (newValue == myLocations[i].category) {
+        console.log(newValue);
+        myLocations[i].visibility = ko.observable(true);
+      } else {
+        console.log("else");
+        myLocations[i].visibility = ko.observable(false);
+      }
+    }
+  });
 
   //This function clears the filter
   this.clearFilter = function(clear) {
@@ -171,12 +178,11 @@ function makeMarkerIcon(markerColor) {
 }
 
 //This function retreives the data from Foursquare about each restaurant in order to filter them by category.
-/*function getData(title) {
+function getData(title) {
   $.ajax({
     url: 'https://api.foursquare.com/v2/venues/search?query='+title+'&near=denver,co&client_id=DT0XBOVKI2P2PN3Q53HO3GZAHC12TKF4NZ42YZFD4N1S4TSC&client_secret=PQ5S5TGRFZQUAEC5XM3KTGQEEWNP5IB1Y0SY2O1YGFGARZPV&v=20180125',
     dataType: "json",
     success: function(response) {
-      var locationData;
       if(response.meta.code == 200) {
         var venue = response.response.venues;
         venue = venue[0];
@@ -188,6 +194,9 @@ function makeMarkerIcon(markerColor) {
           }
         }
       }
+    },
+    error: function() {
+      console.log("ERROR LOADING DATA")
     }
   });
-}*/
+}

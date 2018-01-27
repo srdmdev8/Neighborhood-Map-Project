@@ -18,5 +18,4 @@ App Overview
 This application displays a map of **Denver, CO** using the *Google Maps API*. Markers have been placed on the map to display the location of the various restaurants in the area for you to enjoy **the tastes of Denver**!
 
 - There is a list of the marked places on the left hand side that are interactive to select its applicable marker and display info about the restaurant as well as a streetview of the area.
-- You can filter the restaurants by various food categories using the dropdown menu.
-- You can also toggle the list on the left hand side to slide in out for better view and use of the map.  
+- You can filter the restaurants by various food categories using the dropdown menu.  
