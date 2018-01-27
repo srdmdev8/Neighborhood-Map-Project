@@ -147,17 +147,22 @@ var ViewModel = function() {
     for (var i = 0; i < myLocations.length; i++) {
       if (newValue == myLocations[i].category) {
         console.log(newValue);
-        myLocations[i].visibility = ko.observable(true);
+        myLocations[i].visibility(true);
+        myLocations[i].marker.setVisible(true);
       } else {
         console.log("else");
-        myLocations[i].visibility = ko.observable(false);
+        myLocations[i].visibility(false);
+        myLocations[i].marker.setVisible(false);
       }
     }
   });
 
   //This function clears the filter
-  this.clearFilter = function(clear) {
-
+  this.clearFilter = function() {
+    for (var i = 0; i < myLocations.length; i++) {
+      myLocations[i].visibility(true);
+      myLocations[i].marker.setVisible(true);
+    }
   }
 }
 //Apply data bindings to the view using KnockoutJS.
